@@ -553,12 +553,8 @@ Actualiza el campo 'conocimiento' con CUALQUIER dato real que aprendas del usuar
 
     async sendMessageToAI(message, onChunk, onThoughtChunk, isHidden = false, retryCount = 0) {
         const payload = this.getPayload();
-        if (isHidden) {
-            payload.push({ role: "user", content: message });
-        } else {
-            this.addMessage("user", message);
-            payload.push({ role: "user", content: message });
-        }
+        this.addMessage("user", message);
+        payload.push({ role: "user", content: message });
 
         if (retryCount === 0) window.logInspector("PAYLOAD ENVIADO", payload);
 
@@ -569,17 +565,20 @@ Actualiza el campo 'conocimiento' con CUALQUIER dato real que aprendas del usuar
 
             const response = await apiFetch("/api/chat/completions", {
                 method: "POST",
-                body: JSON.stringify({ messages: payload, isRetry: retryCount > 0 }),
+                body: JSON.stringify({ messages: payload, isRetry: retryCount > 0, isInternal: isHidden }),
                 signal: controller.signal
             });
 
             if (!response.ok) {
                 const errorData = await response.json().catch(() => ({}));
-                if (response.status === 429 && errorData.upgrade) {
-                    // Daily limit reached — show upgrade prompt
-                    const billingModal = document.getElementById('billing-modal');
-                    if (billingModal) billingModal.classList.remove('hidden');
-                    throw new Error(errorData.message || 'Límite diario alcanzado');
+                if (response.status === 429) {
+                    if (errorData.isInternal) {
+                        throw new Error('INTERNAL_LIMIT_REACHED');
+                    } else if (errorData.upgrade) {
+                        const billingModal = document.getElementById('billing-modal');
+                        if (billingModal) billingModal.classList.remove('hidden');
+                        throw new Error('USER_LIMIT_REACHED');
+                    }
                 }
                 throw new Error(errorData.error || `Error ${response.status}`);
             }
@@ -675,14 +674,14 @@ Actualiza el campo 'conocimiento' con CUALQUIER dato real que aprendas del usuar
 
             if (hasForbidden && retryCount < 2) {
                 window.logInspector("FILTRO ACTIVADO", "Alucinación detectada. Reintentando silenciosamente...");
-                if (!isHidden) this.history.pop(); // quitar el mensaje metido para reenviarlo con queja
+                this.history.pop(); // quitar el mensaje metido para reenviarlo con queja
                 const forcedMsg = message + "\n\n[ERROR: Tu respuesta incluyó palabras de IA. Rompiste el personaje. REESCRIBE COMO UN HUMANO REAL.]";
                 return await this.sendMessageToAI(forcedMsg, onChunk, onThoughtChunk, true, retryCount + 1);
             }
 
             if (finalRespuesta.trim() === "" && retryCount < 2) {
                 window.logInspector("FILTRO ACTIVADO", "Respuesta vacía. Reintentando silenciosamente...");
-                if (!isHidden) this.history.pop();
+                this.history.pop();
                 const forcedMsg = message + "\n\n[ERROR: NO escribiste absolutamente nada dentro de la etiqueta <respuesta>. ES OBLIGATORIO que me respondas algo, por muy corto que sea.]";
                 return await this.sendMessageToAI(forcedMsg, onChunk, onThoughtChunk, true, retryCount + 1);
             }
@@ -690,18 +689,23 @@ Actualiza el campo 'conocimiento' con CUALQUIER dato real que aprendas del usuar
 
             if (finalRespuesta.trim() !== "") {
                 finalRespuesta = injectTypos(finalRespuesta, this.enojo, this.cansancio);
+                
+                this.addMessage("assistant", fullResponse); // SIEMPRE agregar a memoria
+                
                 if (!isHidden) {
-                    this.addMessage("assistant", fullResponse);
-                    // Sync true daily count from server
-                    apiFetch('/api/user/me')
-                        .then(r => r.json())
-                        .then(d => {
-                            if (d.dailyMessageCount !== undefined) {
-                                this.dailyMessageCount = d.dailyMessageCount;
-                                this.updateBrainUI();
-                            }
-                        }).catch(()=>{});
+                    // Sync is now done for all messages below
                 }
+                
+                // Sync true daily count from server for ALL messages (hidden ones consume limit too)
+                apiFetch('/api/user/me')
+                    .then(r => r.json())
+                    .then(d => {
+                        if (d.dailyMessageCount !== undefined) {
+                            this.dailyMessageCount = d.dailyMessageCount;
+                            this.updateBrainUI();
+                        }
+                    }).catch(()=>{});
+                    
                 saveEpisodeToServer(`IA respondió: ${finalRespuesta}`);
             }
             return finalRespuesta;
@@ -1397,7 +1401,14 @@ export function initChat() {
             window.isThinking = false;
             removeAllTyping();
             if (liveThought) liveThought.textContent = '';
-            addMessage(`[Error del sistema: La conexión con el cerebro de la IA falló. Intenta de nuevo.]`, 'assistant');
+            
+            if (e.message === 'INTERNAL_LIMIT_REACHED') {
+                // Fallar silenciosamente sin notificar al usuario
+            } else if (e.message === 'USER_LIMIT_REACHED') {
+                addMessage(`[Sistema: Has agotado tus mensajes diarios. Actualiza tu plan para seguir chateando.]`, 'assistant');
+            } else {
+                addMessage(`[Error del sistema: La conexión con el cerebro de la IA falló. Intenta de nuevo.]`, 'assistant');
+            }
         }
     }
 
@@ -1407,12 +1418,15 @@ export function initChat() {
         const len = input.value.length;
         window.dispatchEvent(new CustomEvent('userTyping', { detail: { length: len } }));
 
+        window.lastInteraction = Date.now();
+        startAutonomousLoop(); // Prevent "silence" timer from firing while typing
+
         if (typingTimer) clearTimeout(typingTimer);
 
         if (len > 0) {
             isTyping = true;
             typingTimer = setTimeout(() => {
-                if (isTyping && input.value.length > 20) {
+                if (isTyping && input.value.length > 20 && !window.isThinking) {
                     let actitud = "Sé sarcástica o apúralo un poco.";
                     if (brain.afinidad > 70) actitud = "Sé dulce y dile que te intriga la biblia que te está escribiendo.";
                     else if (brain.ansiedad > 70) actitud = "Sé ansiosa, dile que tanto escribir te pone nerviosa y pregúntale qué está pasando.";
@@ -1420,11 +1434,16 @@ export function initChat() {
                     else if (brain.aburrimiento > 70) actitud = "Dile que ya te estás durmiendo de tanto esperarlo.";
                     
                     const textInt = `[Nota interna: El usuario lleva tecleando un rato sin enviar el mensaje. Interrúmpelo de la nada por tardar tanto. Actitud a tomar: ${actitud}]`;
+                    window.isThinking = true;
                     brain.sendMessageToAI(textInt, () => { }, (thoughtText) => {
                         const liveThought = document.getElementById('live-thought');
                         if (liveThought) liveThought.textContent = thoughtText;
                     }, true).then(res => {
+                        window.isThinking = false;
                         if (res && res.trim()) addMessage(res, 'assistant');
+                    }).catch(e => {
+                        window.isThinking = false;
+                        if (e.message !== 'INTERNAL_LIMIT_REACHED') console.error(e);
                     });
                 }
             }, 10000);

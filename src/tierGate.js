@@ -4,7 +4,7 @@
  */
 const TIER_FEATURES = {
   free: {
-    maxMessagesPerDay: 15,
+    maxMessagesPerDay: 20,
     arquetipos: ['mejorAmigo'],
     autonomousMessages: false,
     evolution: false,
