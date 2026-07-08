@@ -731,6 +731,7 @@ ${evolucionActiva ? '<rasgo_nuevo>OPCIONAL. Si adquieres un gusto nuevo o tienes
             }
 
             if (retryCount === 0) window.logInspector('RESPUESTA CRUDA DE API', fullResponse);
+            console.warn('RAW API RESPONSE:', fullResponse);
             this.parseAIResponse(fullResponse);
             let finalRespuesta = this.extractTag(fullResponse, 'respuesta') || '';
 
