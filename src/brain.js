@@ -641,7 +641,7 @@ ${evolucionActiva ? '<rasgo_nuevo>OPCIONAL. Si adquieres un gusto nuevo o tienes
         this.updateBrainUI();
     }
 
-    async sendMessageToAI(message, onChunk, onThoughtChunk, isHidden = false, retryCount = 0) {
+    async sendMessageToAI(message, onChunk, onThoughtChunk, isHidden = false, retryCount = 0, isInternal = false) {
         const payload = this.getPayload();
         this.addMessage('user', message);
         payload.push({ role: 'user', content: message });
@@ -658,7 +658,7 @@ ${evolucionActiva ? '<rasgo_nuevo>OPCIONAL. Si adquieres un gusto nuevo o tienes
                 body: JSON.stringify({ 
                     messages: payload, 
                     isRetry: retryCount > 0, 
-                    isInternal: isHidden,
+                    isInternal: isInternal,
                     arquetipo_id: this.arquetipoId
                 }),
                 signal: controller.signal
@@ -750,8 +750,9 @@ ${evolucionActiva ? '<rasgo_nuevo>OPCIONAL. Si adquieres un gusto nuevo o tienes
             let finalRespuesta = this.extractTag(fullResponse, 'respuesta') || '';
 
             if (finalRespuesta.trim() === '') {
+                // Intentar rescatar cualquier texto útil del response
                 const stripped = fullResponse.replace(/<[^>]+>[\s\S]*?<\/[^>]+>/g, '').replace(/<[^>]+>/g, '').trim();
-                if (stripped.length > 0 && !fullResponse.includes('<respuesta>')) {
+                if (stripped.length > 0) {
                     window.logInspector('FALLBACK DE TEXTO', 'La IA ignoró el formato XML. Rescatando texto crudo...');
                     finalRespuesta = stripped;
                 }
@@ -769,14 +770,14 @@ ${evolucionActiva ? '<rasgo_nuevo>OPCIONAL. Si adquieres un gusto nuevo o tienes
                 window.logInspector('FILTRO ACTIVADO', 'Alucinación detectada. Reintentando...');
                 this.history.pop();
                 const forcedMsg = message + '\n\n[ERROR: Tu respuesta incluyó palabras de IA. Rompiste el personaje. REESCRIBE COMO UN HUMANO REAL.]';
-                return await this.sendMessageToAI(forcedMsg, onChunk, onThoughtChunk, true, retryCount + 1);
+                return await this.sendMessageToAI(forcedMsg, onChunk, onThoughtChunk, true, retryCount + 1, isInternal);
             }
 
             if (finalRespuesta.trim() === '' && retryCount < 2) {
                 window.logInspector('FILTRO ACTIVADO', 'Respuesta vacía. Reintentando...');
                 this.history.pop();
                 const forcedMsg = message + '\n\n[ERROR: NO escribiste nada dentro de <respuesta>. ES OBLIGATORIO responder algo.]';
-                return await this.sendMessageToAI(forcedMsg, onChunk, onThoughtChunk, true, retryCount + 1);
+                return await this.sendMessageToAI(forcedMsg, onChunk, onThoughtChunk, true, retryCount + 1, isInternal);
             }
 
             if (finalRespuesta.trim() !== '') {

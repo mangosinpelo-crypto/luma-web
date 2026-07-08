@@ -134,7 +134,7 @@ export function initChat() {
                 const arquetipo = brain.getArquetipo();
                 const firstMsgPrompt = `[INSTRUCCIÓN INTERNA: Es tu PRIMER mensaje con este usuario. Acaban de conocerse. Preséntate de forma natural según tu arquetipo (${arquetipo.nombre}). Sé breve, intrigante y deja ganas de responder. NO te presentes como IA.]`;
                 try {
-                    const res = await brain.sendMessageToAI(firstMsgPrompt, () => {}, null, true);
+                    const res = await brain.sendMessageToAI(firstMsgPrompt, () => {}, null, true, 0, true);
                     if (res && res.trim()) await addMsg(res, 'assistant');
                 } catch (e) { console.error('Error sending first message:', e); }
             }, 1000);
@@ -253,7 +253,7 @@ export function initChat() {
             const isPromptHidden = isAutonomous || hasHiddenContext;
             const finalRespuesta = await brain.sendMessageToAI(text, () => {}, (t) => {
                 if (liveThought) liveThought.textContent = t;
-            }, isPromptHidden);
+            }, isPromptHidden, 0, isAutonomous);
 
             window.isThinking = false;
             removeAllTyping();
