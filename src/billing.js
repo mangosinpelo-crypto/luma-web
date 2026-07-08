@@ -4,7 +4,7 @@ import { apiFetch } from './auth.js';
  * Fetches user's current billing status (tier).
  */
 export async function getBillingStatus() {
-  const res = await apiFetch('/api/billing/status');
+  const res = await apiFetch('/api/user/me');
   if (!res.ok) return { tier: 'free' };
   return await res.json();
 }

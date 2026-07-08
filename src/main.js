@@ -33,6 +33,7 @@ async function startApp() {
     // Load billing status and set tier
     try {
         const billing = await getBillingStatus();
+        window.lumaDailyCount = billing.dailyMessageCount || 0;
         setTier(billing.tier || 'free');
         updateTierBadge(billing.tier || 'free');
     } catch (e) {

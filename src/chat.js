@@ -1,5 +1,5 @@
 import { apiFetch } from './auth.js';
-import { canUse, canUseArchetype, getTier, getRemainingMessages } from './tierGate.js';
+import { canUse, canUseArchetype, getTier, getRemainingMessages, getFeatures } from './tierGate.js';
 
 window.logInspector = function (type, content) {
     const box = document.getElementById('inspector-log');
@@ -141,7 +141,7 @@ export class ChatBrain {
         this.rasgos_identidad = [];
         this.memoryState = { episodios: [], conocimiento: {}, perfil_psicologico: "" };
         this.ignoredCount = 0;
-        this.dailyMessageCount = 0;
+        this.dailyMessageCount = window.lumaDailyCount || 0;
 
         this.energia = 100;
         this.climaLocal = "Desconocido";
@@ -490,6 +490,19 @@ Actualiza el campo 'conocimiento' con CUALQUIER dato real que aprendas del usuar
         if (perfilPsiEl && this.memoryState.perfil_psicologico) {
             perfilPsiEl.textContent = `"${this.memoryState.perfil_psicologico}"`;
         }
+
+        // Update message counter UI
+        const counterEl = document.getElementById('msg-counter');
+        if (counterEl) {
+            const features = getFeatures();
+            if (features.maxMessagesPerDay === Infinity) {
+                counterEl.classList.add('hidden');
+            } else {
+                counterEl.classList.remove('hidden');
+                const remaining = getRemainingMessages(this.dailyMessageCount);
+                counterEl.textContent = `${remaining}/${features.maxMessagesPerDay}`;
+            }
+        }
     }
 
     parseAIResponse(fullResponse) {
@@ -549,13 +562,14 @@ Actualiza el campo 'conocimiento' con CUALQUIER dato real que aprendas del usuar
 
         if (retryCount === 0) window.logInspector("PAYLOAD ENVIADO", payload);
 
+        let timeout;
         try {
             const controller = new AbortController();
-            const timeout = setTimeout(() => controller.abort(), 60000);
+            timeout = setTimeout(() => controller.abort(), 120000);
 
             const response = await apiFetch("/api/chat/completions", {
                 method: "POST",
-                body: JSON.stringify({ messages: payload }),
+                body: JSON.stringify({ messages: payload, isRetry: retryCount > 0 }),
                 signal: controller.signal
             });
 
@@ -678,6 +692,15 @@ Actualiza el campo 'conocimiento' con CUALQUIER dato real que aprendas del usuar
                 finalRespuesta = injectTypos(finalRespuesta, this.enojo, this.cansancio);
                 if (!isHidden) {
                     this.addMessage("assistant", fullResponse);
+                    // Sync true daily count from server
+                    apiFetch('/api/user/me')
+                        .then(r => r.json())
+                        .then(d => {
+                            if (d.dailyMessageCount !== undefined) {
+                                this.dailyMessageCount = d.dailyMessageCount;
+                                this.updateBrainUI();
+                            }
+                        }).catch(()=>{});
                 }
                 saveEpisodeToServer(`IA respondió: ${finalRespuesta}`);
             }
@@ -685,6 +708,8 @@ Actualiza el campo 'conocimiento' con CUALQUIER dato real que aprendas del usuar
         } catch (error) {
             console.error("Error de OpenRouter:", error);
             throw error;
+        } finally {
+            if (timeout) clearTimeout(timeout);
         }
     }
 }
