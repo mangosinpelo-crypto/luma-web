@@ -25,7 +25,11 @@ async function initApp() {
     await startApp();
 }
 
+let appStarted = false;
 async function startApp() {
+    if (appStarted) return;
+    appStarted = true;
+
     // Load billing status and set tier
     try {
         const billing = await getBillingStatus();

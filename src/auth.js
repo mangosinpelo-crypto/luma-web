@@ -3,6 +3,7 @@ import { createClient } from '@supabase/supabase-js';
 // These are public (anon) keys — safe to expose in frontend
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL || '';
 const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY || '';
+const API_URL = import.meta.env.VITE_API_URL || '';
 
 let supabase = null;
 
@@ -81,7 +82,7 @@ export async function signOut() {
  */
 export function onAuthStateChange(callback) {
   const client = getClient();
-  if (!client) return { data: { subscription: { unsubscribe: () => {} } } };
+  if (!client) return { data: { subscription: { unsubscribe: () => { } } } };
   return client.auth.onAuthStateChange((event, session) => {
     callback(event, session);
   });
@@ -99,7 +100,8 @@ export async function apiFetch(path, options = {}) {
   if (token) {
     headers['Authorization'] = `Bearer ${token}`;
   }
-  const res = await fetch(path, { ...options, headers });
+  const fullPath = API_URL ? `${API_URL}${path}` : path;
+  const res = await fetch(fullPath, { ...options, headers });
   return res;
 }
 
