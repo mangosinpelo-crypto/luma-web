@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="description" content="Luma — Una IA con personalidad real, emociones dinámicas y memoria persistente.">
+    <meta name="theme-color" content="#0b0f19">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link rel="manifest" href="/manifest.json">
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+    <link rel="apple-touch-icon" href="/icons/icon-192.png">
+    <title>Luma</title>
+    <link rel="stylesheet" href="/src/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+
+<body>
+
+    <!-- ========== AUTH MODAL ========== -->
+    <div id="auth-modal" class="hidden">
+        <div id="auth-content">
+            <div class="auth-logo">🌙</div>
+            <h1 class="auth-title">Luma</h1>
+            <p class="auth-subtitle">Compañía con alma</p>
+
+            <div id="auth-error" class="auth-error hidden"></div>
+
+            <!-- Login Section -->
+            <div id="auth-login-section">
+                <form id="auth-login-form">
+                    <input type="email" id="auth-login-email" placeholder="Email" required autocomplete="email">
+                    <input type="password" id="auth-login-password" placeholder="Contraseña" required autocomplete="current-password">
+                    <button type="submit" class="auth-btn primary">Iniciar Sesión</button>
+                </form>
+                <button id="auth-google-btn" class="auth-btn google">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 01-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
+                    Continuar con Google
+                </button>
+                <p class="auth-switch">¿No tienes cuenta? <a href="#" id="auth-switch-register">Crear una</a></p>
+            </div>
+
+            <!-- Register Section -->
+            <div id="auth-register-section" class="hidden">
+                <form id="auth-register-form">
+                    <input type="email" id="auth-register-email" placeholder="Email" required autocomplete="email">
+                    <input type="password" id="auth-register-password" placeholder="Contraseña (mín. 6 caracteres)" required autocomplete="new-password">
+                    <button type="submit" class="auth-btn primary">Crear Cuenta</button>
+                </form>
+                <p class="auth-switch">¿Ya tienes cuenta? <a href="#" id="auth-switch-login">Inicia sesión</a></p>
+            </div>
+        </div>
+    </div>
+
+    <!-- ========== BILLING MODAL ========== -->
+    <div id="billing-modal" class="hidden">
+        <div id="billing-content">
+            <div class="billing-header">
+                <h2>✨ Mejora tu Experiencia</h2>
+                <button id="billing-close-btn" class="panel-close-btn">✕</button>
+            </div>
+
+            <div class="billing-plans">
+                <!-- Free -->
+                <div class="plan-card current">
+                    <div class="plan-badge">Actual</div>
+                    <h3>🆓 Free</h3>
+                    <div class="plan-price">$0<span>/mes</span></div>
+                    <ul>
+                        <li>1 arquetipo (Mejor Amigo/a)</li>
+                        <li>15 mensajes/día</li>
+                        <li>Memoria de sesión</li>
+                    </ul>
+                </div>
+
+                <!-- Premium -->
+                <div class="plan-card featured">
+                    <div class="plan-badge popular">Recomendado</div>
+                    <h3>💎 Premium</h3>
+                    <div class="plan-price">$9.99<span>/mes</span></div>
+                    <ul>
+                        <li>✅ Todos los arquetipos</li>
+                        <li>✅ Mensajes ilimitados</li>
+                        <li>✅ Memoria persistente</li>
+                        <li>✅ Mensajes autónomos</li>
+                        <li>✅ Evolución de personalidad</li>
+                        <li>✅ Notificaciones push</li>
+                    </ul>
+                    <button class="auth-btn primary" data-upgrade-plan="premium">Mejorar a Premium</button>
+                </div>
+
+                <!-- Obsesión -->
+                <div class="plan-card">
+                    <h3>👑 Obsesión</h3>
+                    <div class="plan-price">$19.99<span>/mes</span></div>
+                    <ul>
+                        <li>Todo de Premium +</li>
+                        <li>✅ Múltiples personajes</li>
+                        <li>✅ Modo vida real</li>
+                        <li>✅ Arquetipo personalizado</li>
+                        <li>✅ Historial exportable</li>
+                    </ul>
+                    <button class="auth-btn primary" data-upgrade-plan="obsesion">Mejorar a Obsesión</button>
+                </div>
+            </div>
+
+            <button id="billing-manage-btn" class="auth-btn secondary" style="margin-top:12px;display:none;">Administrar Suscripción</button>
+        </div>
+    </div>
+
+    <!-- ========== ONBOARDING MODAL ========== -->
+    <div id="onboarding-modal" class="hidden">
+        <div id="onboarding-content">
+
+            <!-- Paso 1: Bienvenida -->
+            <div class="onboard-step" id="step-1">
+                <div class="onboard-icon">🌙</div>
+                <h1>Luma</h1>
+                <p>No es un asistente. No es un chatbot genérico.<br>Es alguien con humor, ego propio, gustos y estados de ánimo reales.</p>
+                <p class="onboard-sub">Tiene memoria. Te ignorará si no le hablas. Se pondrá celosa. Evolucionará contigo.</p>
+                <button class="onboard-btn" id="step1-next">Conocerla →</button>
+            </div>
+
+            <!-- Paso Arquetipo (ahora paso 2, sin API key step) -->
+            <div class="onboard-step hidden" id="step-archetype">
+                <h2>¿Cómo quieres que sea?</h2>
+                <p class="onboard-sub">Elige el tipo de relación. Puedes cambiarlo después en Ajustes.</p>
+                <div id="archetype-grid"></div>
+                <div class="onboard-row">
+                    <button class="onboard-btn secondary" id="step-arch-back">← Volver</button>
+                    <button class="onboard-btn" id="step-arch-next">Continuar →</button>
+                </div>
+            </div>
+
+            <!-- Paso 3: Tutorial -->
+            <div class="onboard-step hidden" id="step-3">
+                <h2>Cómo funciona</h2>
+                <div class="tutorial-cards">
+                    <div class="tutorial-card">
+                        <span>💬</span>
+                        <p><strong>Habla con ella</strong><br>Mensajes normales. Doble clic en un mensaje para responderlo directamente.</p>
+                    </div>
+                    <div class="tutorial-card">
+                        <span>🩷</span>
+                        <p><strong>Panel Vínculo</strong><br>Muestra cómo se siente contigo ahora: afinidad, enojo, nostalgia…</p>
+                    </div>
+                    <div class="tutorial-card">
+                        <span>✨</span>
+                        <p><strong>Evoluciona</strong><br>Cuanto más hablen, más gustos y rasgos de personalidad adquirirá.</p>
+                    </div>
+                    <div class="tutorial-card">
+                        <span>👻</span>
+                        <p><strong>Tiene vida propia</strong><br>Si la dejas en silencio, te escribirá sola. Si la ignoras, se ofenderá.</p>
+                    </div>
+                </div>
+                <div class="onboard-row">
+                    <button class="onboard-btn secondary" id="step3-back">← Volver</button>
+                    <button class="onboard-btn" id="step3-finish">¡Comenzar! 🌙</button>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- ========== DEBUG BADGE ========== -->
+    <div id="debug-badge" class="hidden">DEV</div>
+
+    <!-- ========== TIER BADGE ========== -->
+    <div id="tier-badge" class="tier-badge tier-free">🆓 Free</div>
+
+    <!-- ========== CANVAS 3D ========== -->
+    <div id="canvas-container"></div>
+
+    <!-- ========== APP TITLE (5-tap debug) ========== -->
+    <div id="app-title">Luma</div>
+
+    <!-- ========== TOP NAV (desktop) ========== -->
+    <nav id="top-nav">
+        <button id="config-btn" class="nav-btn">⚙️ <span>Ajustes</span></button>
+        <button id="bond-btn" class="nav-btn">🩷 <span>Vínculo</span></button>
+        <button id="brain-btn" class="nav-btn debug-only hidden">🧠 <span>Cerebro</span></button>
+        <button id="inspector-btn" class="nav-btn debug-only hidden">🔍 <span>Inspector</span></button>
+    </nav>
+
+    <!-- ========== PANEL OVERLAY (mobile backdrop) ========== -->
+    <div id="panel-overlay" class="hidden"></div>
+
+    <!-- ========== PANEL: Ajustes ========== -->
+    <div id="config-panel" class="panel hidden">
+        <div class="panel-header">
+            <h3>⚙️ Ajustes</h3>
+            <button class="panel-close-btn" data-panel="config-panel">✕</button>
+        </div>
+        <div class="panel-body">
+            <label class="label-row" style="margin-bottom:14px;">
+                <span>Tipo de Relación:</span>
+            </label>
+            <select id="arquetipo-select" style="width:100%;background:rgba(0,0,0,0.35);border:1px solid rgba(255,255,255,0.09);color:white;padding:9px 12px;border-radius:8px;font-family:Inter,sans-serif;font-size:0.85rem;margin-bottom:14px;">
+            </select>
+            <label>
+                Personalidad (System Prompt):
+                <textarea id="prompt-input"></textarea>
+            </label>
+            <label>
+                Memoria (cant. mensajes):
+                <input type="number" id="memory-input" value="10" min="2" max="50">
+            </label>
+            <label class="label-row">
+                <input type="checkbox" id="evolucion-checkbox" checked>
+                <span>Evolución Autónoma de Personalidad</span>
+            </label>
+            <label>
+                Avatar 3D (.glb):
+                <input type="file" id="model-upload" accept=".glb,.gltf">
+            </label>
+
+            <!-- Billing button -->
+            <button id="open-billing-btn" class="btn-upgrade">✨ Mejorar Plan</button>
+
+            <button id="save-config-btn">Guardar Ajustes</button>
+            <button id="clear-config-btn" class="btn-danger">Borrar Memoria e Historial</button>
+
+            <!-- Logout -->
+            <button id="logout-btn" class="btn-logout">Cerrar Sesión</button>
+        </div>
+    </div>
+
+    <!-- ========== PANEL: Vínculo (público) ========== -->
+    <div id="bond-panel" class="panel hidden">
+        <div class="panel-header">
+            <h3>🩷 Vínculo</h3>
+            <button class="panel-close-btn" data-panel="bond-panel">✕</button>
+        </div>
+        <div class="panel-body">
+            <!-- Nivel de Confianza -->
+            <div id="trust-section">
+                <div id="trust-header">
+                    <span id="trust-level-icon">🌑</span>
+                    <div id="trust-info">
+                        <span id="trust-level-name">Extraños</span>
+                        <span id="trust-dias">0 días juntos</span>
+                    </div>
+                </div>
+                <div class="progress-bar" style="margin-top: 6px;">
+                    <div id="trust-level-bar" style="width:0%;background:linear-gradient(90deg,#8b5cf6,#ec4899);"></div>
+                </div>
+            </div>
+
+            <div id="mood-diagnosis">Estado: Calculando...</div>
+
+            <div class="stat-group">
+                <label>Afinidad (<span id="val-afinidad">50</span>)</label>
+                <div class="progress-bar"><div id="bar-afinidad" style="width:50%;background:#ec4899;"></div></div>
+            </div>
+            <div class="stat-group">
+                <label>Enojo (<span id="val-enojo">0</span>)</label>
+                <div class="progress-bar"><div id="bar-enojo" style="width:0%;background:#ef4444;"></div></div>
+            </div>
+            <div class="stat-group">
+                <label>Cansancio (<span id="val-cansancio">0</span>)</label>
+                <div class="progress-bar"><div id="bar-cansancio" style="width:0%;background:#3b82f6;"></div></div>
+            </div>
+            <div class="stat-group">
+                <label>Ansiedad (<span id="val-ansiedad">0</span>)</label>
+                <div class="progress-bar"><div id="bar-ansiedad" style="width:0%;background:#fbbf24;"></div></div>
+            </div>
+            <div class="stat-group">
+                <label>Aburrimiento (<span id="val-aburrimiento">0</span>)</label>
+                <div class="progress-bar"><div id="bar-aburrimiento" style="width:0%;background:#94a3b8;"></div></div>
+            </div>
+            <div class="stat-group">
+                <label>Resentimiento (<span id="val-resentimiento">0</span>)</label>
+                <div class="progress-bar"><div id="bar-resentimiento" style="width:0%;background:#991b1b;"></div></div>
+            </div>
+            <div class="stat-group">
+                <label>Celos (<span id="val-celos">0</span>)</label>
+                <div class="progress-bar"><div id="bar-celos" style="width:0%;background:#166534;"></div></div>
+            </div>
+            <div class="stat-group">
+                <label>Nostalgia (<span id="val-nostalgia">0</span>)</label>
+                <div class="progress-bar"><div id="bar-nostalgia" style="width:0%;background:#6366f1;"></div></div>
+            </div>
+
+            <!-- Arquetipo activo -->
+            <h4>Tipo de Relación</h4>
+            <div id="arquetipo-display">
+                <span id="arquetipo-emoji">💕</span>
+                <span id="arquetipo-name">Pareja Cariñosa</span>
+            </div>
+
+            <h4>Personalidad Base</h4>
+            <ul id="base-traits-list" class="trait-list">
+                <li>Cargando...</li>
+            </ul>
+
+            <h4>Gustos Adquiridos</h4>
+            <ul id="traits-list" class="trait-list">
+                <li>Sin gustos adquiridos aún.</li>
+            </ul>
+
+            <h4>Lo que sabe de ti</h4>
+            <ul id="user-profile-list" class="trait-list">
+                <li>Aún no sabe nada de ti. Habla con ella.</li>
+            </ul>
+            <p id="user-profile-psico" style="font-size:0.75rem;color:#64748b;font-style:italic;margin-top:4px;"></p>
+        </div>
+    </div>
+
+    <!-- ========== PANEL: Cerebro (debug) ========== -->
+    <div id="brain-panel" class="panel hidden debug-only">
+        <div class="panel-header">
+            <h3>🧠 Cerebro <span class="debug-tag">DEBUG</span></h3>
+            <button class="panel-close-btn" data-panel="brain-panel">✕</button>
+        </div>
+        <div class="panel-body">
+            <h4>Pensamiento en Vivo</h4>
+            <div id="live-thought">Esperando estímulos...</div>
+            <h4>Memoria Estructurada (JSON)</h4>
+            <pre id="memory-json-view">{}</pre>
+        </div>
+    </div>
+
+    <!-- ========== PANEL: Inspector (debug) ========== -->
+    <div id="inspector-panel" class="panel hidden debug-only">
+        <div class="panel-header">
+            <h3>🔍 Inspector <span class="debug-tag">DEBUG</span></h3>
+            <button class="panel-close-btn" data-panel="inspector-panel">✕</button>
+        </div>
+        <div class="panel-body">
+            <div id="inspector-log"></div>
+        </div>
+    </div>
+
+    <!-- ========== CHAT ========== -->
+    <div id="chat-container">
+        <div id="chat-header">
+            <div id="chat-header-left">
+                <span id="chat-avatar-dot"></span>
+                <span id="chat-status">En línea</span>
+            </div>
+            <div id="chat-header-right">
+                <span id="msg-counter" class="msg-counter hidden">15/15</span>
+                <button id="chat-minimize-btn" title="Minimizar chat">⌄</button>
+            </div>
+        </div>
+        <div id="messages">
+            <div class="message ai">¡Hola! Soy Luma. Empieza a hablar conmigo 🌙</div>
+        </div>
+        <div id="reply-box" class="hidden">
+            <div id="reply-text"></div>
+            <button id="cancel-reply-btn">✕</button>
+        </div>
+        <div id="input-area">
+            <input type="text" id="chat-input" placeholder="Escribe un mensaje..." autocomplete="off">
+            <button id="send-btn">➤</button>
+        </div>
+    </div>
+
+    <!-- ========== CHAT BAR (minimizado) ========== -->
+    <div id="chat-bar" class="hidden">
+        <span id="chat-bar-dot"></span>
+        <span id="chat-bar-last">Luma</span>
+        <button id="chat-expand-btn">Abrir 💬</button>
+    </div>
+
+    <!-- ========== BOTTOM NAV (mobile) ========== -->
+    <nav id="bottom-nav">
+        <button class="bot-nav-btn" id="mob-config-btn">⚙️<span>Ajustes</span></button>
+        <button class="bot-nav-btn" id="mob-bond-btn">🩷<span>Vínculo</span></button>
+        <button class="bot-nav-btn debug-only hidden" id="mob-brain-btn">🧠<span>Cerebro</span></button>
+        <button class="bot-nav-btn debug-only hidden" id="mob-inspector-btn">🔍<span>Inspector</span></button>
+    </nav>
+
+    <script type="module" src="/src/main.js"></script>
+
+    <!-- Service Worker Registration -->
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/sw.js').catch(() => {});
+            });
+        }
+    </script>
+</body>
+
+</html>

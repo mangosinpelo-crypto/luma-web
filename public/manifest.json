@@ -1,0 +1,24 @@
+{
+  "name": "Luma — Compañía con Alma",
+  "short_name": "Luma",
+  "description": "Una IA con personalidad real, emociones dinámicas y memoria persistente.",
+  "start_url": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "theme_color": "#0b0f19",
+  "background_color": "#0b0f19",
+  "icons": [
+    {
+      "src": "/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
