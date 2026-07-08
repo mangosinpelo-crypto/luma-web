@@ -198,7 +198,8 @@ export class ChatBrain {
     }
 
     fetchClimaLocal() {
-        fetch('https://ipapi.co/json/').then(r => r.json()).then(d => {
+        fetch('https://ipwho.is/').then(r => r.json()).then(d => {
+            if (!d.success) return;
             fetch(`https://api.open-meteo.com/v1/forecast?latitude=${d.latitude}&longitude=${d.longitude}&current_weather=true`)
                 .then(r => r.json()).then(w => {
                     this.climaLocal = `Temperatura: ${w.current_weather.temperature}°C, Ciudad: ${d.city}`;
