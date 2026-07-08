@@ -451,10 +451,21 @@ ${evolucionActiva ? '<rasgo_nuevo>OPCIONAL. Si adquieres un gusto nuevo o tienes
 <olvidar>OPCIONAL. Clave exacta a eliminar de tu conocimiento. Ej: hobby. Solo si el usuario te corrigió explícitamente.</olvidar>
 <respuesta>Lo que dirás al usuario. MUY CORTO. Separa frases con "||" si tienes varias ideas. Si la instrucción dice "VACÍA": <respuesta></respuesta>.</respuesta>
 `;
-        return [
+        const rawPayload = [
             { role: 'system', content: this.systemPrompt + '\n' + contextStr },
             ...this.history
         ];
+
+        // Fusionar roles consecutivos (algunos modelos fallan si hay varios 'user' seguidos)
+        const mergedPayload = [];
+        for (const msg of rawPayload) {
+            if (mergedPayload.length > 0 && mergedPayload[mergedPayload.length - 1].role === msg.role) {
+                mergedPayload[mergedPayload.length - 1].content += '\n\n' + msg.content;
+            } else {
+                mergedPayload.push({ ...msg });
+            }
+        }
+        return mergedPayload;
     }
 
     extractTag(text, tag) {
@@ -684,7 +695,10 @@ ${evolucionActiva ? '<rasgo_nuevo>OPCIONAL. Si adquieres un gusto nuevo o tienes
                     if (line.startsWith('data: ')) {
                         try {
                             const data = JSON.parse(line.slice(6));
-                            const content = data.choices[0]?.delta?.content;
+                            if (data.error) {
+                                throw new Error(data.error.message || JSON.stringify(data.error));
+                            }
+                            const content = data.choices && data.choices[0]?.delta?.content;
                             if (content) {
                                 fullResponse += content;
 
